@@ -5,8 +5,10 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { InjectConnection, MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { HashingService } from './utils/hashing/hashing.service';
+
 import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { HashingService } from './auth/utils/hashing/hashing.service';
 
 @Module({
   imports: [
@@ -17,6 +19,9 @@ import { AuthModule } from './auth/auth.module';
     MongooseModule.forRoot(process.env.DB_URI),
     UsersModule,
     AuthModule,
+    PassportModule.register({
+      session: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, HashingService],

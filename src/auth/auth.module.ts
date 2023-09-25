@@ -3,11 +3,12 @@ import { AuthController } from './controllers/auth/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
-import { HashingService } from 'src/utils/hashing/hashing.service';
 import { UsersService } from 'src/users/services/users/users.service';
 import { UsersModule } from 'src/users/users.module';
-import { LocalStrategy } from './utils/local.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { SessionSerializer } from './utils/session.serializer';
+import { HashingService } from './utils/hashing/hashing.service';
+import { LocalStrategy } from './utils/local.strategy';
 
 @Module({
   imports: [
@@ -24,9 +25,11 @@ import { PassportModule } from '@nestjs/passport';
       },
     ]),
     UsersModule,
-    PassportModule,
+    PassportModule.register({
+      session: true,
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, LocalStrategy],
+  providers: [AuthService, UsersService, LocalStrategy, SessionSerializer],
 })
 export class AuthModule {}

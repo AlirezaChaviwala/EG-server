@@ -3,7 +3,12 @@ import { UsersController } from './controllers/users/users.controller';
 import { UsersService } from './services/users/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
-import { HashingService } from 'src/utils/hashing/hashing.service';
+import { SessionSerializer } from 'src/auth/utils/session.serializer';
+import { LocalStrategy } from 'src/auth/utils/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from 'src/auth/services/auth/auth.service';
+import { AuthenticatedGuard } from 'src/auth/utils/local.auth.guard';
+import { HashingService } from 'src/auth/utils/hashing/hashing.service';
 
 @Module({
   imports: [
@@ -19,12 +24,11 @@ import { HashingService } from 'src/utils/hashing/hashing.service';
         },
       },
     ]),
+    // PassportModule.register({
+    //   session: true,
+    // }),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, LocalStrategy, SessionSerializer, AuthService],
 })
-export class UsersModule {
-  doLog(msg: string) {
-    console.log(msg);
-  }
-}
+export class UsersModule {}

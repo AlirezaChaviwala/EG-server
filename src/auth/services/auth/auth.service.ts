@@ -6,23 +6,28 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
-import { ExistingUserDto } from 'src/auth/dtos/existing-user.dto';
-import { LoginUserDto } from 'src/auth/dtos/login-user.dto';
-import { UserExistsException } from 'src/auth/exceptions/UserExists.exception';
+import { HashingService } from 'src/auth/utils/hashing/hashing.service';
+import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { ExistingUserDto } from 'src/users/dtos/existing-user.dto';
+import { LoginUserDto } from 'src/users/dtos/login-user.dto';
+import { UserExistsException } from 'src/users/exceptions/UserExists.exception';
+
 import { User } from 'src/users/schemas/user.schema';
-import { SerializedUser } from 'src/auth/types/index';
-import { HashingService } from 'src/utils/hashing/hashing.service';
+
 import { UsersService } from 'src/users/services/users/users.service';
+import { SerializedUser } from 'src/users/types';
 
 @Injectable()
 export class AuthService {
-  constructor(@Inject(UsersService) private userService: UsersService) {}
+  constructor(
+    @Inject(forwardRef(() => UsersService)) private userService: UsersService,
+  ) {}
 
-  async registerUser(createUserDto: CreateUserDto): Promise<SerializedUser> {
+  async registerUser(createUserDto: CreateUserDto) {
     try {
       const existingUserObject: ExistingUserDto = {
         email: createUserDto.email,
@@ -48,7 +53,7 @@ export class AuthService {
     }
   }
 
-  async validateUser(loginUserDto: LoginUserDto): Promise<SerializedUser> {
+  async validateUser(loginUserDto: LoginUserDto) {
     try {
       const existingUserObject: ExistingUserDto = {
         email: loginUserDto.email,
@@ -66,7 +71,7 @@ export class AuthService {
         );
 
         if (passwordMatch) {
-          return new SerializedUser(isExistingUser);
+          return { email: isExistingUser.email, name: isExistingUser.name };
         } else {
           throw new UnauthorizedException();
         }
