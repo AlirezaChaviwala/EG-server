@@ -2,25 +2,16 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get,
   Inject,
   Post,
-  Req,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
-  Request,
-  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import { User } from 'src/users/schemas/user.schema';
 import { SerializedUser } from 'src/users/types';
 import { AuthService } from 'src/auth/services/auth/auth.service';
-import { AuthGuard } from '@nestjs/passport';
-import {
-  AuthenticatedGuard,
-  LocalAuthGuard,
-} from 'src/auth/utils/local.auth.guard';
+import { LoginUserDto } from 'src/users/dtos/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,23 +28,14 @@ export class AuthController {
     }
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('signIn')
-  // @UsePipes(ValidationPipe)
-  async signIn(@Req() req: Request) {
-    // console.log(req);
+  @UsePipes(ValidationPipe)
+  async signIn(@Body() loginUserDto: LoginUserDto): Promise<{ token: string }> {
     console.log('signIn method');
-    // return { User: req.user, message: 'User logged in successfully' };
-    // try {
-    //   return await this.authService.validateUser(loginUserDto);
-    // } catch (error) {
-    //   throw error;
-    // }
-  }
-
-  @UseGuards(AuthenticatedGuard)
-  @Get('dashboard')
-  async getDashboard(@Req() req: Request) {
-    return req;
+    try {
+      return await this.authService.validateUser(loginUserDto);
+    } catch (error) {
+      throw error;
+    }
   }
 }

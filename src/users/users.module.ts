@@ -1,14 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersController } from './controllers/users/users.controller';
 import { UsersService } from './services/users/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
-import { SessionSerializer } from 'src/auth/utils/session.serializer';
-import { LocalStrategy } from 'src/auth/utils/local.strategy';
-import { PassportModule } from '@nestjs/passport';
-import { AuthService } from 'src/auth/services/auth/auth.service';
-import { AuthenticatedGuard } from 'src/auth/utils/local.auth.guard';
 import { HashingService } from 'src/auth/utils/hashing/hashing.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,11 +20,9 @@ import { HashingService } from 'src/auth/utils/hashing/hashing.service';
         },
       },
     ]),
-    // PassportModule.register({
-    //   session: true,
-    // }),
+    forwardRef(() => AuthModule),
   ],
   controllers: [UsersController],
-  providers: [UsersService, LocalStrategy, SessionSerializer, AuthService],
+  providers: [UsersService],
 })
 export class UsersModule {}

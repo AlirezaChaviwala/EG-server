@@ -2,13 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { InjectConnection, MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-
 import { AuthModule } from './auth/auth.module';
-import { PassportModule } from '@nestjs/passport';
 import { HashingService } from './auth/utils/hashing/hashing.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -19,12 +18,10 @@ import { HashingService } from './auth/utils/hashing/hashing.service';
     MongooseModule.forRoot(process.env.DB_URI),
     UsersModule,
     AuthModule,
-    PassportModule.register({
-      session: true,
-    }),
+    JwtModule,
   ],
   controllers: [AppController],
-  providers: [AppService, HashingService],
+  providers: [AppService, HashingService, ConfigService],
 })
 export class AppModule {
   constructor(

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthController } from './controllers/auth/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -6,9 +6,10 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
 import { UsersService } from 'src/users/services/users/users.service';
 import { UsersModule } from 'src/users/users.module';
 import { PassportModule } from '@nestjs/passport';
-import { SessionSerializer } from './utils/session.serializer';
 import { HashingService } from './utils/hashing/hashing.service';
-import { LocalStrategy } from './utils/local.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './utils/jwt.strategy';
 
 @Module({
   imports: [
@@ -24,12 +25,24 @@ import { LocalStrategy } from './utils/local.strategy';
         },
       },
     ]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     PassportModule.register({
-      session: true,
+      defaultStrategy: 'jwt',
+    }),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          secret: config.get<string>('JWT_SECRET'),
+          signOptions: {
+            expiresIn: config.get<string | number>('JWT_MAX_AGE'),
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, LocalStrategy, SessionSerializer],
+  providers: [AuthService, UsersService, JwtStrategy],
+  exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

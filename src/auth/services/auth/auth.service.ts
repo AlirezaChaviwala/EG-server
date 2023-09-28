@@ -1,33 +1,28 @@
 import {
-  HttpException,
   HttpStatus,
   Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
-  forwardRef,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { HashingService } from 'src/auth/utils/hashing/hashing.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { ExistingUserDto } from 'src/users/dtos/existing-user.dto';
 import { LoginUserDto } from 'src/users/dtos/login-user.dto';
 import { UserExistsException } from 'src/users/exceptions/UserExists.exception';
-
-import { User } from 'src/users/schemas/user.schema';
-
 import { UsersService } from 'src/users/services/users/users.service';
 import { SerializedUser } from 'src/users/types';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(forwardRef(() => UsersService)) private userService: UsersService,
+    @Inject(UsersService) private userService: UsersService,
+    @Inject(JwtService) private jwtService: JwtService,
   ) {}
 
-  async registerUser(createUserDto: CreateUserDto) {
+  async registerUser(createUserDto: CreateUserDto): Promise<SerializedUser> {
     try {
       const existingUserObject: ExistingUserDto = {
         email: createUserDto.email,
@@ -53,7 +48,7 @@ export class AuthService {
     }
   }
 
-  async validateUser(loginUserDto: LoginUserDto) {
+  async validateUser(loginUserDto: LoginUserDto): Promise<{ token: string }> {
     try {
       const existingUserObject: ExistingUserDto = {
         email: loginUserDto.email,
@@ -71,7 +66,11 @@ export class AuthService {
         );
 
         if (passwordMatch) {
-          return { email: isExistingUser.email, name: isExistingUser.name };
+          const token = this.jwtService.sign({
+            email: isExistingUser.email,
+            name: isExistingUser.name,
+          });
+          return { token };
         } else {
           throw new UnauthorizedException();
         }
