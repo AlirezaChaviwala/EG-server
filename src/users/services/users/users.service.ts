@@ -18,7 +18,6 @@ export class UsersService {
 
   async findUser(queryObject: Object, filterObject?: Object) {
     try {
-      throw new Error('gay');
       return await this.userModel.findOne(queryObject, filterObject);
     } catch (error) {
       this.logger.error(error.message, error.stack);
