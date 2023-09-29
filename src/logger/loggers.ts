@@ -1,17 +1,26 @@
-import { ConsoleLogger } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ErrorLog } from 'src/auth/utils/schemas/error-log.schema';
+import { ErrorLog } from './schemas/error-log.schema';
 
-export class Logger extends ConsoleLogger {
+@Injectable()
+export class AppLogger extends Logger {
   constructor(
     @InjectModel(ErrorLog.name) private errorLogModel: Model<ErrorLog>,
   ) {
     super();
   }
 
-  async error(message: any, stack?: string, context?: string) {
-    await new this.errorLogModel().save();
-    super.error.apply(this, ...arguments);
+  async error(message: string, trace: string) {
+    try {
+      super.error(message, trace);
+
+      await this.errorLogModel.create({
+        message,
+        stackTrace: trace,
+      });
+    } catch (error) {
+      console.error(`Failed to save error to database: ${error.message}`);
+    }
   }
 }

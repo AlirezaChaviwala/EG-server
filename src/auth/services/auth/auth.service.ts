@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { HashingService } from 'src/auth/utils/hashing/hashing.service';
+import { AppLogger } from 'src/logger/loggers';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { ExistingUserDto } from 'src/users/dtos/existing-user.dto';
 import { LoginUserDto } from 'src/users/dtos/login-user.dto';
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     @Inject(UsersService) private userService: UsersService,
     @Inject(JwtService) private jwtService: JwtService,
+    @Inject(AppLogger) private logger: AppLogger,
   ) {}
 
   async registerUser(createUserDto: CreateUserDto): Promise<SerializedUser> {
@@ -27,6 +29,7 @@ export class AuthService {
       const existingUserObject: ExistingUserDto = {
         email: createUserDto.email,
       };
+
       const isExistingUser = await this.userService.findUser(
         existingUserObject,
         { email: 1 },
@@ -41,6 +44,7 @@ export class AuthService {
         return new SerializedUser(createUserDto);
       }
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       if (error.status && error.status === HttpStatus.BAD_REQUEST) {
         throw error;
       }
@@ -80,6 +84,7 @@ export class AuthService {
         );
       }
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       throw error;
     }
   }

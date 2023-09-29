@@ -8,6 +8,8 @@ import { Connection } from 'mongoose';
 import { AuthModule } from './auth/auth.module';
 import { HashingService } from './auth/utils/hashing/hashing.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -15,13 +17,27 @@ import { JwtModule } from '@nestjs/jwt';
       envFilePath: '.env',
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     MongooseModule.forRoot(process.env.DB_URI),
     UsersModule,
     AuthModule,
     JwtModule,
   ],
   controllers: [AppController],
-  providers: [AppService, HashingService, ConfigService],
+  providers: [
+    AppService,
+    HashingService,
+    ConfigService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {
   constructor(

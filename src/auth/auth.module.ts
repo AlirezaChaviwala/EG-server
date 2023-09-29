@@ -10,7 +10,8 @@ import { HashingService } from './utils/hashing/hashing.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './utils/jwt.strategy';
-
+import { AppLogger } from 'src/logger/loggers';
+import { ErrorLog, ErrorLogSchema } from 'src/logger/schemas/error-log.schema';
 @Module({
   imports: [
     MongooseModule.forFeatureAsync([
@@ -23,6 +24,12 @@ import { JwtStrategy } from './utils/jwt.strategy';
           });
           return schema;
         },
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: ErrorLog.name,
+        schema: ErrorLogSchema,
       },
     ]),
     forwardRef(() => UsersModule),
@@ -42,7 +49,7 @@ import { JwtStrategy } from './utils/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy],
+  providers: [AuthService, UsersService, JwtStrategy, AppLogger],
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

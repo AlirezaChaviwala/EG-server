@@ -5,12 +5,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 })
 export class ErrorLog {
   @Prop({ required: true })
-  name!: string;
-
-  @Prop()
-  errorCode?: number;
-
-  @Prop({ required: true })
   message!: string;
 
   @Prop({ required: true })

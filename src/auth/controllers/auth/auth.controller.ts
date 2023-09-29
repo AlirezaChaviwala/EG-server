@@ -31,7 +31,6 @@ export class AuthController {
   @Post('signIn')
   @UsePipes(ValidationPipe)
   async signIn(@Body() loginUserDto: LoginUserDto): Promise<{ token: string }> {
-    console.log('signIn method');
     try {
       return await this.authService.validateUser(loginUserDto);
     } catch (error) {
